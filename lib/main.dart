@@ -44,7 +44,15 @@ Future<void> main() async {
       if (device == null) {
         throw "Device $portName is not connected";
       } else {
+        debugPrint("open1");
         var port = await device.create();
+        debugPrint("open2");
+        var opened = await port!.open();
+        debugPrint("open3");
+        if (!opened) {
+          throw "Couldn't open device $portName";
+        }
+        debugPrint("open4");
         return port!;
       }
     }, pollPort: (portObj) async {
