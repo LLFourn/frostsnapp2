@@ -6,13 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `start`
-// These functions have error during generation (see debug logs or enable `stop_on_error: true` for more details): `MAGICBYTES_RECV_UPSTREAM`
-
-BigInt get magicBytesLen =>
-    RustLib.instance.api.crateApiDeviceListMagicBytesLen();
-
-Stream<List<String>> startUsbAndroid(
+Stream<Uint8List> startUsbAndroid(
         {required FutureOr<List<String>> Function() listDevices,
         required FutureOr<Object> Function(String) openPort,
         required FutureOr<Uint8List> Function(Object) pollPort,
@@ -23,5 +17,5 @@ Stream<List<String>> startUsbAndroid(
         pollPort: pollPort,
         writePort: writePort);
 
-Stream<List<String>> startUsbOrdinary() =>
+Stream<Uint8List> startUsbOrdinary() =>
     RustLib.instance.api.crateApiDeviceListStartUsbOrdinary();

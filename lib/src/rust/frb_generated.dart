@@ -69,7 +69,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.8.0';
 
   @override
-  int get rustContentHash => 477781506;
+  int get rustContentHash => 1675412127;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -80,19 +80,17 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  BigInt crateApiDeviceListMagicBytesLen();
-
   String crateApiSimpleGreet({required String name});
 
   Future<void> crateApiSimpleInitApp();
 
-  Stream<List<String>> crateApiDeviceListStartUsbAndroid(
+  Stream<Uint8List> crateApiDeviceListStartUsbAndroid(
       {required FutureOr<List<String>> Function() listDevices,
       required FutureOr<Object> Function(String) openPort,
       required FutureOr<Uint8List> Function(Object) pollPort,
       required FutureOr<void> Function(Object, Uint8List) writePort});
 
-  Stream<List<String>> crateApiDeviceListStartUsbOrdinary();
+  Stream<Uint8List> crateApiDeviceListStartUsbOrdinary();
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -104,35 +102,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  BigInt crateApiDeviceListMagicBytesLen() {
-    return handler.executeSync(SyncTask(
-      callFfi: () {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
-      },
-      codec: SseCodec(
-        decodeSuccessData: sse_decode_usize,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiDeviceListMagicBytesLenConstMeta,
-      argValues: [],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiDeviceListMagicBytesLenConstMeta =>
-      const TaskConstMeta(
-        debugName: "MAGIC_BYTES_LEN",
-        argNames: [],
-      );
-
-  @override
   String crateApiSimpleGreet({required String name}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(name, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -155,7 +130,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 3, port: port_);
+            funcId: 2, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -173,12 +148,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Stream<List<String>> crateApiDeviceListStartUsbAndroid(
+  Stream<Uint8List> crateApiDeviceListStartUsbAndroid(
       {required FutureOr<List<String>> Function() listDevices,
       required FutureOr<Object> Function(String) openPort,
       required FutureOr<Uint8List> Function(Object) pollPort,
       required FutureOr<void> Function(Object, Uint8List) writePort}) {
-    final stream = RustStreamSink<List<String>>();
+    final stream = RustStreamSink<Uint8List>();
     unawaited(handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
@@ -190,9 +165,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pollPort, serializer);
         sse_encode_DartFn_Inputs_DartOpaque_list_prim_u_8_strict_Output_unit_AnyhowException(
             writePort, serializer);
-        sse_encode_StreamSink_list_String_Sse(stream, serializer);
+        sse_encode_StreamSink_list_prim_u_8_strict_Sse(stream, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 4, port: port_);
+            funcId: 3, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -218,14 +193,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Stream<List<String>> crateApiDeviceListStartUsbOrdinary() {
-    final stream = RustStreamSink<List<String>>();
+  Stream<Uint8List> crateApiDeviceListStartUsbOrdinary() {
+    final stream = RustStreamSink<Uint8List>();
     unawaited(handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_StreamSink_list_String_Sse(stream, serializer);
+        sse_encode_StreamSink_list_prim_u_8_strict_Sse(stream, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 5, port: port_);
+            funcId: 4, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -423,7 +398,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  RustStreamSink<List<String>> dco_decode_StreamSink_list_String_Sse(
+  RustStreamSink<Uint8List> dco_decode_StreamSink_list_prim_u_8_strict_Sse(
       dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     throw UnimplementedError();
@@ -486,7 +461,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  RustStreamSink<List<String>> sse_decode_StreamSink_list_String_Sse(
+  RustStreamSink<Uint8List> sse_decode_StreamSink_list_prim_u_8_strict_Sse(
       SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     throw UnimplementedError('Unreachable ()');
@@ -611,13 +586,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_StreamSink_list_String_Sse(
-      RustStreamSink<List<String>> self, SseSerializer serializer) {
+  void sse_encode_StreamSink_list_prim_u_8_strict_Sse(
+      RustStreamSink<Uint8List> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(
         self.setupAndSerialize(
             codec: SseCodec(
-          decodeSuccessData: sse_decode_list_String,
+          decodeSuccessData: sse_decode_list_prim_u_8_strict,
           decodeErrorData: sse_decode_AnyhowException,
         )),
         serializer);

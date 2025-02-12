@@ -1,9 +1,17 @@
-use std::{future::Future, pin::Pin, sync::Arc, time::Duration};
+use std::{collections::HashSet, future::Future,  sync::Arc, time::Duration};
 
 use flutter_rust_bridge::{DartFnFuture, DartOpaque};
-use futures::{pin_mut, Stream};
-use tokio::io::{AsyncRead, AsyncWrite};
+use futures::{future, pin_mut, Stream, StreamExt as _};
+use tokio::io::{ AsyncReadExt,  AsyncWriteExt};
 use tokio_serial::SerialStream;
+
+use crate::frb_generated::StreamSink;
+
+pub trait UsbPort {
+    fn read_port(&mut self) ->  impl Future<Output=Vec<u8>> + Send;
+    fn write_port(&mut self, bytes: Vec<u8>) -> impl Future<Output=()> + Send;
+}
+
 
 pub struct AndroidUsb {
     pub(crate) list_devices: Option<Box<dyn Fn() -> DartFnFuture<Vec<String>> + Send + Sync>>,
@@ -19,7 +27,7 @@ pub trait UsbSerialBackend {
     fn open_port(
         &self,
         name: String,
-    ) -> impl Future<Output = impl AsyncRead + AsyncWrite + Send> + Send;
+    ) -> impl Future<Output = impl UsbPort + Send> + Send;
 }
 
 impl UsbSerialBackend for AndroidUsb {
@@ -39,60 +47,34 @@ impl UsbSerialBackend for AndroidUsb {
     fn open_port(
         &self,
         name: String,
-    ) -> impl Future<Output = impl AsyncRead + AsyncWrite + Send> + Send {
-        struct A {
+    ) -> impl Future<Output = impl UsbPort + Send> + Send {
+        struct DartPort {
             port: DartOpaque,
             poll_port: Arc<dyn Fn(DartOpaque) -> DartFnFuture<Vec<u8>> + Send + Sync>,
             write_port: Arc<dyn Fn(DartOpaque, Vec<u8>) -> DartFnFuture<()> + Send + Sync>,
-
-            current_read: Option<DartFnFuture<Vec<u8>>>,
-        }
-        impl AsyncRead for A {
-            fn poll_read(
-                self: Pin<&mut Self>,
-                cx: &mut std::task::Context<'_>,
-                buf: &mut tokio::io::ReadBuf<'_>,
-            ) -> std::task::Poll<std::io::Result<()>> {
-                match self.get_mut().current_read.take() {
-                    Some(fut) => fut,
-                    None => {
-                        //(self.poll_port)(self.port);
-                        todo!()
-                    },
-                };
-                todo!()
-            }
-        }
-        impl AsyncWrite for A {
-            fn poll_write(
-                self: Pin<&mut Self>,
-                cx: &mut std::task::Context<'_>,
-                buf: &[u8],
-            ) -> std::task::Poll<Result<usize, std::io::Error>> {
-                todo!()
-            }
-
-            fn poll_flush(
-                self: Pin<&mut Self>,
-                cx: &mut std::task::Context<'_>,
-            ) -> std::task::Poll<Result<(), std::io::Error>> {
-                todo!()
-            }
-
-            fn poll_shutdown(
-                self: Pin<&mut Self>,
-                cx: &mut std::task::Context<'_>,
-            ) -> std::task::Poll<Result<(), std::io::Error>> {
-                todo!()
-            }
         }
 
-        let portFut = self.open_port(name);
+        impl UsbPort for DartPort {
+            fn read_port(&mut self) ->  impl Future<Output=Vec<u8>> {
+                async {
+                    (self.poll_port)(self.port.clone()).await
+                }
+            }
+
+            fn write_port(&mut self, bytes: Vec<u8>) -> impl Future<Output=()> {
+                (self.write_port)(self.port.clone(),bytes)
+            }
+
+        }
+
         async {
-
+            let port = (self.open_port)(name).await;
+            DartPort {
+                port,
+                poll_port: Arc::clone(&self.poll_port),
+                write_port: Arc::clone(&self.write_port),
+            }
         }
-        futures::future::ready(A {
-        })
     }
 }
 
@@ -116,9 +98,56 @@ impl UsbSerialBackend for OrdinaryUsb {
     fn open_port(
         &self,
         name: String,
-    ) -> impl Future<Output = impl AsyncRead + AsyncWrite + Send> + Send {
+    ) -> impl Future<Output = impl UsbPort + Send> + Send {
         let stream = SerialStream::open(&tokio_serial::new(name, 14_400))
             .expect("TODO: Figure this out later");
-        futures::future::ready(stream)
+
+        future::ready(OrdinaryUsbPort {
+            inner: stream
+        })
+
     }
+}
+
+pub struct OrdinaryUsbPort {
+    inner: SerialStream,
+}
+
+impl UsbPort for OrdinaryUsbPort {
+    async fn read_port(&mut self) ->  Vec<u8> {
+        let mut buf = [0u8;256];
+        let read = self.inner.read(&mut buf[..]).await.expect("todo");
+        buf[..read].to_vec()
+    }
+
+    async fn write_port(&mut self, bytes: Vec<u8>)  {
+        self.inner.write_all(&bytes[..]).await.expect("TODO")
+    }
+}
+
+const MAGIC_BYTES_LEN: usize = 7;
+const MAGICBYTES_RECV_UPSTREAM: [u8; MAGIC_BYTES_LEN] = [0xff, 0x5d, 0xa3, 0x85, 0xd4, 0xee, 0x5a];
+
+pub async fn start_usb_loop<T: UsbSerialBackend>(mut usb_backend: T, stream: StreamSink<Vec<u8>>) {
+    let mut open_ports = HashSet::<String>::new();
+    let events = usb_backend.port_events();
+    pin_mut!(events);
+    while let Some(ports) = events.next().await {
+        // TODO: Fix this up later.
+        for port_name in &ports {
+            if open_ports.contains(port_name) {
+                continue;
+            }
+            let mut port = usb_backend.open_port(port_name.clone()).await;
+            open_ports.insert(port_name.clone());
+
+            port.write_port(MAGICBYTES_RECV_UPSTREAM.to_vec()).await;
+
+            loop {
+                let bytes = port.read_port().await;
+                stream.add(bytes).unwrap();
+            }
+        }
+    }
+    todo!()
 }

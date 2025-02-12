@@ -11,7 +11,7 @@ Future<void> main() async {
   await RustLib.init();
   //final UsbSerialImpl usbSerial;
 
-  final Stream<List<String>> devicesStream;
+  final Stream<Uint8List> devicesStream;
   if (Platform.isAndroid) {
     debugPrint("android");
     final List<String> devices = [];
@@ -37,6 +37,7 @@ Future<void> main() async {
       debugPrint("end callback");
       return devices;
     }, openPort: (portName) async {
+      debugPrint("open");
       final deviceList = await UsbSerial.listDevices();
       final device = deviceList
           .firstWhereOrNull((device) => device.deviceName == portName);
@@ -47,9 +48,11 @@ Future<void> main() async {
         return port!;
       }
     }, pollPort: (portObj) async {
+      debugPrint("poll");
       final port = portObj as UsbPort;
       return await port.inputStream!.first;
     }, writePort: (portObj, data) async {
+      debugPrint("write");
       final port = portObj as UsbPort;
       return await port.write(data);
     });
@@ -65,7 +68,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final Stream<List<String>> devices;
+  final Stream<Uint8List> devices;
   MyApp({super.key, required this.devices});
 
   @override

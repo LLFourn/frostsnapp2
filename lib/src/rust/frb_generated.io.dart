@@ -45,7 +45,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Object dco_decode_DartOpaque(dynamic raw);
 
   @protected
-  RustStreamSink<List<String>> dco_decode_StreamSink_list_String_Sse(
+  RustStreamSink<Uint8List> dco_decode_StreamSink_list_prim_u_8_strict_Sse(
       dynamic raw);
 
   @protected
@@ -76,7 +76,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Object sse_decode_DartOpaque(SseDeserializer deserializer);
 
   @protected
-  RustStreamSink<List<String>> sse_decode_StreamSink_list_String_Sse(
+  RustStreamSink<Uint8List> sse_decode_StreamSink_list_prim_u_8_strict_Sse(
       SseDeserializer deserializer);
 
   @protected
@@ -133,8 +133,8 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_DartOpaque(Object self, SseSerializer serializer);
 
   @protected
-  void sse_encode_StreamSink_list_String_Sse(
-      RustStreamSink<List<String>> self, SseSerializer serializer);
+  void sse_encode_StreamSink_list_prim_u_8_strict_Sse(
+      RustStreamSink<Uint8List> self, SseSerializer serializer);
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);
