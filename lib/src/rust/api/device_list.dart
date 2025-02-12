@@ -6,15 +6,22 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-Stream<List<String>> start({required UsbSerialImpl usbBackend}) =>
-    RustLib.instance.api.crateApiDeviceListStart(usbBackend: usbBackend);
+// These functions are ignored because they are not marked as `pub`: `start`
+// These functions have error during generation (see debug logs or enable `stop_on_error: true` for more details): `MAGICBYTES_RECV_UPSTREAM`
 
-Future<UsbSerialImpl> usbAndroid(
-        {required FutureOr<List<String>> Function() listDevices}) =>
-    RustLib.instance.api.crateApiDeviceListUsbAndroid(listDevices: listDevices);
+BigInt get magicBytesLen =>
+    RustLib.instance.api.crateApiDeviceListMagicBytesLen();
 
-Future<UsbSerialImpl> usbOrdinary() =>
-    RustLib.instance.api.crateApiDeviceListUsbOrdinary();
+Stream<List<String>> startUsbAndroid(
+        {required FutureOr<List<String>> Function() listDevices,
+        required FutureOr<Object> Function(String) openPort,
+        required FutureOr<Uint8List> Function(Object) pollPort,
+        required FutureOr<void> Function(Object, Uint8List) writePort}) =>
+    RustLib.instance.api.crateApiDeviceListStartUsbAndroid(
+        listDevices: listDevices,
+        openPort: openPort,
+        pollPort: pollPort,
+        writePort: writePort);
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<UsbSerialImpl>>
-abstract class UsbSerialImpl implements RustOpaqueInterface {}
+Stream<List<String>> startUsbOrdinary() =>
+    RustLib.instance.api.crateApiDeviceListStartUsbOrdinary();

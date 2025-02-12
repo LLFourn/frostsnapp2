@@ -19,16 +19,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     required super.portManager,
   });
 
-  CrossPlatformFinalizerArg
-      get rust_arc_decrement_strong_count_UsbSerialImplPtr => wire
-          ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImplPtr;
-
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw);
 
   @protected
-  UsbSerialImpl
-      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
+  FutureOr<Uint8List> Function(Object)
+      dco_decode_DartFn_Inputs_DartOpaque_Output_list_prim_u_8_strict_AnyhowException(
+          dynamic raw);
+
+  @protected
+  FutureOr<void> Function(Object, Uint8List)
+      dco_decode_DartFn_Inputs_DartOpaque_list_prim_u_8_strict_Output_unit_AnyhowException(
+          dynamic raw);
+
+  @protected
+  FutureOr<Object> Function(String)
+      dco_decode_DartFn_Inputs_String_Output_DartOpaque_AnyhowException(
           dynamic raw);
 
   @protected
@@ -37,11 +43,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Object dco_decode_DartOpaque(dynamic raw);
-
-  @protected
-  UsbSerialImpl
-      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          dynamic raw);
 
   @protected
   RustStreamSink<List<String>> dco_decode_StreamSink_list_String_Sse(
@@ -72,17 +73,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
-  UsbSerialImpl
-      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          SseDeserializer deserializer);
-
-  @protected
   Object sse_decode_DartOpaque(SseDeserializer deserializer);
-
-  @protected
-  UsbSerialImpl
-      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          SseDeserializer deserializer);
 
   @protected
   RustStreamSink<List<String>> sse_decode_StreamSink_list_String_Sse(
@@ -121,8 +112,18 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
-      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          UsbSerialImpl self, SseSerializer serializer);
+      sse_encode_DartFn_Inputs_DartOpaque_Output_list_prim_u_8_strict_AnyhowException(
+          FutureOr<Uint8List> Function(Object) self, SseSerializer serializer);
+
+  @protected
+  void
+      sse_encode_DartFn_Inputs_DartOpaque_list_prim_u_8_strict_Output_unit_AnyhowException(
+          FutureOr<void> Function(Object, Uint8List) self,
+          SseSerializer serializer);
+
+  @protected
+  void sse_encode_DartFn_Inputs_String_Output_DartOpaque_AnyhowException(
+      FutureOr<Object> Function(String) self, SseSerializer serializer);
 
   @protected
   void sse_encode_DartFn_Inputs__Output_list_String_AnyhowException(
@@ -130,11 +131,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_DartOpaque(Object self, SseSerializer serializer);
-
-  @protected
-  void
-      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          UsbSerialImpl self, SseSerializer serializer);
 
   @protected
   void sse_encode_StreamSink_list_String_Sse(
@@ -182,36 +178,4 @@ class RustLibWire implements BaseWire {
   /// The symbols are looked up in [dynamicLibrary].
   RustLibWire(ffi.DynamicLibrary dynamicLibrary)
       : _lookup = dynamicLibrary.lookup;
-
-  void
-      rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-      ptr,
-    );
-  }
-
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImplPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-          'frbgen_frostsnapp2_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl');
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl =
-      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImplPtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
-
-  void
-      rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-      ptr,
-    );
-  }
-
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImplPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-          'frbgen_frostsnapp2_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl');
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl =
-      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImplPtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
 }

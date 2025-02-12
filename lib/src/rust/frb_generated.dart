@@ -69,7 +69,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.8.0';
 
   @override
-  int get rustContentHash => 471113774;
+  int get rustContentHash => 477781506;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -80,26 +80,19 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  BigInt crateApiDeviceListMagicBytesLen();
+
   String crateApiSimpleGreet({required String name});
 
   Future<void> crateApiSimpleInitApp();
 
-  Stream<List<String>> crateApiDeviceListStart(
-      {required UsbSerialImpl usbBackend});
+  Stream<List<String>> crateApiDeviceListStartUsbAndroid(
+      {required FutureOr<List<String>> Function() listDevices,
+      required FutureOr<Object> Function(String) openPort,
+      required FutureOr<Uint8List> Function(Object) pollPort,
+      required FutureOr<void> Function(Object, Uint8List) writePort});
 
-  Future<UsbSerialImpl> crateApiDeviceListUsbAndroid(
-      {required FutureOr<List<String>> Function() listDevices});
-
-  Future<UsbSerialImpl> crateApiDeviceListUsbOrdinary();
-
-  RustArcIncrementStrongCountFnType
-      get rust_arc_increment_strong_count_UsbSerialImpl;
-
-  RustArcDecrementStrongCountFnType
-      get rust_arc_decrement_strong_count_UsbSerialImpl;
-
-  CrossPlatformFinalizerArg
-      get rust_arc_decrement_strong_count_UsbSerialImplPtr;
+  Stream<List<String>> crateApiDeviceListStartUsbOrdinary();
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -111,12 +104,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  BigInt crateApiDeviceListMagicBytesLen() {
+    return handler.executeSync(SyncTask(
+      callFfi: () {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_usize,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiDeviceListMagicBytesLenConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiDeviceListMagicBytesLenConstMeta =>
+      const TaskConstMeta(
+        debugName: "MAGIC_BYTES_LEN",
+        argNames: [],
+      );
+
+  @override
   String crateApiSimpleGreet({required String name}) {
     return handler.executeSync(SyncTask(
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(name, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -139,7 +155,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 2, port: port_);
+            funcId: 3, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -157,86 +173,176 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Stream<List<String>> crateApiDeviceListStart(
-      {required UsbSerialImpl usbBackend}) {
+  Stream<List<String>> crateApiDeviceListStartUsbAndroid(
+      {required FutureOr<List<String>> Function() listDevices,
+      required FutureOr<Object> Function(String) openPort,
+      required FutureOr<Uint8List> Function(Object) pollPort,
+      required FutureOr<void> Function(Object, Uint8List) writePort}) {
     final stream = RustStreamSink<List<String>>();
     unawaited(handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-            usbBackend, serializer);
+        sse_encode_DartFn_Inputs__Output_list_String_AnyhowException(
+            listDevices, serializer);
+        sse_encode_DartFn_Inputs_String_Output_DartOpaque_AnyhowException(
+            openPort, serializer);
+        sse_encode_DartFn_Inputs_DartOpaque_Output_list_prim_u_8_strict_AnyhowException(
+            pollPort, serializer);
+        sse_encode_DartFn_Inputs_DartOpaque_list_prim_u_8_strict_Output_unit_AnyhowException(
+            writePort, serializer);
         sse_encode_StreamSink_list_String_Sse(stream, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 3, port: port_);
+            funcId: 4, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
         decodeErrorData: null,
       ),
-      constMeta: kCrateApiDeviceListStartConstMeta,
-      argValues: [usbBackend, stream],
+      constMeta: kCrateApiDeviceListStartUsbAndroidConstMeta,
+      argValues: [listDevices, openPort, pollPort, writePort, stream],
       apiImpl: this,
     )));
     return stream.stream;
   }
 
-  TaskConstMeta get kCrateApiDeviceListStartConstMeta => const TaskConstMeta(
-        debugName: "start",
-        argNames: ["usbBackend", "stream"],
-      );
-
-  @override
-  Future<UsbSerialImpl> crateApiDeviceListUsbAndroid(
-      {required FutureOr<List<String>> Function() listDevices}) {
-    return handler.executeNormal(NormalTask(
-      callFfi: (port_) {
-        final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_DartFn_Inputs__Output_list_String_AnyhowException(
-            listDevices, serializer);
-        pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 4, port: port_);
-      },
-      codec: SseCodec(
-        decodeSuccessData:
-            sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl,
-        decodeErrorData: null,
-      ),
-      constMeta: kCrateApiDeviceListUsbAndroidConstMeta,
-      argValues: [listDevices],
-      apiImpl: this,
-    ));
-  }
-
-  TaskConstMeta get kCrateApiDeviceListUsbAndroidConstMeta =>
+  TaskConstMeta get kCrateApiDeviceListStartUsbAndroidConstMeta =>
       const TaskConstMeta(
-        debugName: "usb_android",
-        argNames: ["listDevices"],
+        debugName: "start_usb_android",
+        argNames: [
+          "listDevices",
+          "openPort",
+          "pollPort",
+          "writePort",
+          "stream"
+        ],
       );
 
   @override
-  Future<UsbSerialImpl> crateApiDeviceListUsbOrdinary() {
-    return handler.executeNormal(NormalTask(
+  Stream<List<String>> crateApiDeviceListStartUsbOrdinary() {
+    final stream = RustStreamSink<List<String>>();
+    unawaited(handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_StreamSink_list_String_Sse(stream, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 5, port: port_);
       },
       codec: SseCodec(
-        decodeSuccessData:
-            sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl,
+        decodeSuccessData: sse_decode_unit,
         decodeErrorData: null,
       ),
-      constMeta: kCrateApiDeviceListUsbOrdinaryConstMeta,
-      argValues: [],
+      constMeta: kCrateApiDeviceListStartUsbOrdinaryConstMeta,
+      argValues: [stream],
       apiImpl: this,
-    ));
+    )));
+    return stream.stream;
   }
 
-  TaskConstMeta get kCrateApiDeviceListUsbOrdinaryConstMeta =>
+  TaskConstMeta get kCrateApiDeviceListStartUsbOrdinaryConstMeta =>
       const TaskConstMeta(
-        debugName: "usb_ordinary",
-        argNames: [],
+        debugName: "start_usb_ordinary",
+        argNames: ["stream"],
       );
+
+  Future<void> Function(int, dynamic)
+      encode_DartFn_Inputs_DartOpaque_Output_list_prim_u_8_strict_AnyhowException(
+          FutureOr<Uint8List> Function(Object) raw) {
+    return (callId, rawArg0) async {
+      final arg0 = dco_decode_DartOpaque(rawArg0);
+
+      Box<Uint8List>? rawOutput;
+      Box<AnyhowException>? rawError;
+      try {
+        rawOutput = Box(await raw(arg0));
+      } catch (e, s) {
+        rawError = Box(AnyhowException("$e\n\n$s"));
+      }
+
+      final serializer = SseSerializer(generalizedFrbRustBinding);
+      assert((rawOutput != null) ^ (rawError != null));
+      if (rawOutput != null) {
+        serializer.buffer.putUint8(0);
+        sse_encode_list_prim_u_8_strict(rawOutput.value, serializer);
+      } else {
+        serializer.buffer.putUint8(1);
+        sse_encode_AnyhowException(rawError!.value, serializer);
+      }
+      final output = serializer.intoRaw();
+
+      generalizedFrbRustBinding.dartFnDeliverOutput(
+          callId: callId,
+          ptr: output.ptr,
+          rustVecLen: output.rustVecLen,
+          dataLen: output.dataLen);
+    };
+  }
+
+  Future<void> Function(int, dynamic, dynamic)
+      encode_DartFn_Inputs_DartOpaque_list_prim_u_8_strict_Output_unit_AnyhowException(
+          FutureOr<void> Function(Object, Uint8List) raw) {
+    return (callId, rawArg0, rawArg1) async {
+      final arg0 = dco_decode_DartOpaque(rawArg0);
+      final arg1 = dco_decode_list_prim_u_8_strict(rawArg1);
+
+      Box<void>? rawOutput;
+      Box<AnyhowException>? rawError;
+      try {
+        rawOutput = Box(await raw(arg0, arg1));
+      } catch (e, s) {
+        rawError = Box(AnyhowException("$e\n\n$s"));
+      }
+
+      final serializer = SseSerializer(generalizedFrbRustBinding);
+      assert((rawOutput != null) ^ (rawError != null));
+      if (rawOutput != null) {
+        serializer.buffer.putUint8(0);
+        sse_encode_unit(rawOutput.value, serializer);
+      } else {
+        serializer.buffer.putUint8(1);
+        sse_encode_AnyhowException(rawError!.value, serializer);
+      }
+      final output = serializer.intoRaw();
+
+      generalizedFrbRustBinding.dartFnDeliverOutput(
+          callId: callId,
+          ptr: output.ptr,
+          rustVecLen: output.rustVecLen,
+          dataLen: output.dataLen);
+    };
+  }
+
+  Future<void> Function(int, dynamic)
+      encode_DartFn_Inputs_String_Output_DartOpaque_AnyhowException(
+          FutureOr<Object> Function(String) raw) {
+    return (callId, rawArg0) async {
+      final arg0 = dco_decode_String(rawArg0);
+
+      Box<Object>? rawOutput;
+      Box<AnyhowException>? rawError;
+      try {
+        rawOutput = Box(await raw(arg0));
+      } catch (e, s) {
+        rawError = Box(AnyhowException("$e\n\n$s"));
+      }
+
+      final serializer = SseSerializer(generalizedFrbRustBinding);
+      assert((rawOutput != null) ^ (rawError != null));
+      if (rawOutput != null) {
+        serializer.buffer.putUint8(0);
+        sse_encode_DartOpaque(rawOutput.value, serializer);
+      } else {
+        serializer.buffer.putUint8(1);
+        sse_encode_AnyhowException(rawError!.value, serializer);
+      }
+      final output = serializer.intoRaw();
+
+      generalizedFrbRustBinding.dartFnDeliverOutput(
+          callId: callId,
+          ptr: output.ptr,
+          rustVecLen: output.rustVecLen,
+          dataLen: output.dataLen);
+    };
+  }
 
   Future<void> Function(
     int,
@@ -272,14 +378,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     };
   }
 
-  RustArcIncrementStrongCountFnType
-      get rust_arc_increment_strong_count_UsbSerialImpl => wire
-          .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl;
-
-  RustArcDecrementStrongCountFnType
-      get rust_arc_decrement_strong_count_UsbSerialImpl => wire
-          .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl;
-
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
@@ -287,11 +385,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  UsbSerialImpl
-      dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
+  FutureOr<Uint8List> Function(Object)
+      dco_decode_DartFn_Inputs_DartOpaque_Output_list_prim_u_8_strict_AnyhowException(
           dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
-    return UsbSerialImplImpl.frbInternalDcoDecode(raw as List<dynamic>);
+    throw UnimplementedError('');
+  }
+
+  @protected
+  FutureOr<void> Function(Object, Uint8List)
+      dco_decode_DartFn_Inputs_DartOpaque_list_prim_u_8_strict_Output_unit_AnyhowException(
+          dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError('');
+  }
+
+  @protected
+  FutureOr<Object> Function(String)
+      dco_decode_DartFn_Inputs_String_Output_DartOpaque_AnyhowException(
+          dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError('');
   }
 
   @protected
@@ -306,14 +420,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Object dco_decode_DartOpaque(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return decodeDartOpaque(raw, generalizedFrbRustBinding);
-  }
-
-  @protected
-  UsbSerialImpl
-      dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return UsbSerialImplImpl.frbInternalDcoDecode(raw as List<dynamic>);
   }
 
   @protected
@@ -373,28 +479,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  UsbSerialImpl
-      sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return UsbSerialImplImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
-  }
-
-  @protected
   Object sse_decode_DartOpaque(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_isize(deserializer);
     return decodeDartOpaque(inner, generalizedFrbRustBinding);
-  }
-
-  @protected
-  UsbSerialImpl
-      sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return UsbSerialImplImpl.frbInternalSseDecode(
-        sse_decode_usize(deserializer), sse_decode_i_32(deserializer));
   }
 
   @protected
@@ -474,11 +562,33 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   void
-      sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          UsbSerialImpl self, SseSerializer serializer) {
+      sse_encode_DartFn_Inputs_DartOpaque_Output_list_prim_u_8_strict_AnyhowException(
+          FutureOr<Uint8List> Function(Object) self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as UsbSerialImplImpl).frbInternalSseEncode(move: true),
+    sse_encode_DartOpaque(
+        encode_DartFn_Inputs_DartOpaque_Output_list_prim_u_8_strict_AnyhowException(
+            self),
+        serializer);
+  }
+
+  @protected
+  void
+      sse_encode_DartFn_Inputs_DartOpaque_list_prim_u_8_strict_Output_unit_AnyhowException(
+          FutureOr<void> Function(Object, Uint8List) self,
+          SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_DartOpaque(
+        encode_DartFn_Inputs_DartOpaque_list_prim_u_8_strict_Output_unit_AnyhowException(
+            self),
+        serializer);
+  }
+
+  @protected
+  void sse_encode_DartFn_Inputs_String_Output_DartOpaque_AnyhowException(
+      FutureOr<Object> Function(String) self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_DartOpaque(
+        encode_DartFn_Inputs_String_Output_DartOpaque_AnyhowException(self),
         serializer);
   }
 
@@ -497,16 +607,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_isize(
         PlatformPointerUtil.ptrToPlatformInt64(encodeDartOpaque(
             self, portManager.dartHandlerPort, generalizedFrbRustBinding)),
-        serializer);
-  }
-
-  @protected
-  void
-      sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerUsbSerialImpl(
-          UsbSerialImpl self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_usize(
-        (self as UsbSerialImplImpl).frbInternalSseEncode(move: null),
         serializer);
   }
 
@@ -580,24 +680,4 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
   }
-}
-
-@sealed
-class UsbSerialImplImpl extends RustOpaque implements UsbSerialImpl {
-  // Not to be used by end users
-  UsbSerialImplImpl.frbInternalDcoDecode(List<dynamic> wire)
-      : super.frbInternalDcoDecode(wire, _kStaticData);
-
-  // Not to be used by end users
-  UsbSerialImplImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
-      : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-  static final _kStaticData = RustArcStaticData(
-    rustArcIncrementStrongCount:
-        RustLib.instance.api.rust_arc_increment_strong_count_UsbSerialImpl,
-    rustArcDecrementStrongCount:
-        RustLib.instance.api.rust_arc_decrement_strong_count_UsbSerialImpl,
-    rustArcDecrementStrongCountPtr:
-        RustLib.instance.api.rust_arc_decrement_strong_count_UsbSerialImplPtr,
-  );
 }
