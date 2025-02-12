@@ -6,12 +6,12 @@ import 'dart:io';
 
 Future<void> main() async {
   await RustLib.init();
-  final PortLister portLister;
+  final UsbSerialImpl usbSerial;
 
   if (Platform.isAndroid) {
     debugPrint("android");
     final List<String> devices = [];
-    portLister = await startAndroidUsb(dartCallback: () async {
+    usbSerial = await usbAndroid(listDevices: () async {
       final usbStream = UsbSerial.usbEventStream!;
       final UsbEvent event = await usbStream.first;
       if (event.event == UsbEvent.ACTION_USB_DETACHED) {
@@ -34,14 +34,18 @@ Future<void> main() async {
       return devices;
     });
   } else {
-    portLister = await startOrdinaryUsb();
+    usbSerial = await usbOrdinary();
   }
-  runApp(MyApp(portLister: portLister));
+
+  final devices = start(
+    usbBackend: usbSerial,
+  );
+  runApp(MyApp(devices: devices));
 }
 
 class MyApp extends StatelessWidget {
-  final PortLister portLister;
-  MyApp({super.key, required this.portLister});
+  final Stream<List<String>> devices;
+  MyApp({super.key, required this.devices});
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +53,7 @@ class MyApp extends StatelessWidget {
       home: Scaffold(
         appBar: AppBar(title: const Text('flutter_rust_bridge quickstart')),
         body: StreamBuilder(
-            stream: portLister.subPorts(),
+            stream: devices,
             builder: (ctx, snap) {
               if (!snap.hasData) {
                 return CircularProgressIndicator();

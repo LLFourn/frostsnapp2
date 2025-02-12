@@ -9,12 +9,13 @@ crate-type = ["cdylib", "staticlib"]
 [dependencies]
 tokio-serial = {  version = "5.4.5" }
 flutter_rust_bridge = "=2.8.0"
-frostsnap_core = { path = "../../frostsnap/frostsnap_core" }
-frostsnap_comms = { path = "../../frostsnap/frostsnap_comms" }
+# frostsnap_core = { path = "../../frostsnap/frostsnap_core" }
+# frostsnap_comms = { path = "../../frostsnap/frostsnap_comms" }
 anyhow = "1"
 tokio = { version = "1", features = ["time"] }
 futures  = "0.3"
 log = "0.4"
+async-stream = "0.3"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

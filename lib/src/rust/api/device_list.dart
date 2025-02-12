@@ -6,26 +6,15 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-Future<AndroidUsb> startAndroidUsb(
-        {required FutureOr<List<String>> Function() dartCallback}) =>
-    RustLib.instance.api
-        .crateApiDeviceListStartAndroidUsb(dartCallback: dartCallback);
+Stream<List<String>> start({required UsbSerialImpl usbBackend}) =>
+    RustLib.instance.api.crateApiDeviceListStart(usbBackend: usbBackend);
 
-Future<OrdinaryUsb> startOrdinaryUsb() =>
-    RustLib.instance.api.crateApiDeviceListStartOrdinaryUsb();
+Future<UsbSerialImpl> usbAndroid(
+        {required FutureOr<List<String>> Function() listDevices}) =>
+    RustLib.instance.api.crateApiDeviceListUsbAndroid(listDevices: listDevices);
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<AndroidUsb>>
-abstract class AndroidUsb implements RustOpaqueInterface, PortLister {
-  @override
-  Stream<List<String>> subPorts();
-}
+Future<UsbSerialImpl> usbOrdinary() =>
+    RustLib.instance.api.crateApiDeviceListUsbOrdinary();
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<OrdinaryUsb>>
-abstract class OrdinaryUsb implements RustOpaqueInterface, PortLister {
-  @override
-  Stream<List<String>> subPorts();
-}
-
-abstract class PortLister {
-  Stream<List<String>> subPorts();
-}
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<UsbSerialImpl>>
+abstract class UsbSerialImpl implements RustOpaqueInterface {}
