@@ -1,57 +1,88 @@
-use flutter_rust_bridge::frb;
+use std::{ pin::Pin, time::Duration};
+
+use flutter_rust_bridge::{frb, DartFnFuture};
 pub use frostsnap_core::DeviceId;
+use futures::{Stream, StreamExt as _};
 
-#[frb(mirror(DeviceId))]
-pub struct _DeviceId(pub [u8; 33]);
+use crate::frb_generated::StreamSink;
 
-// #[derive(Clone, Debug)]
-// pub struct DeviceListChange {
-//     pub kind: DeviceListChangeKind,
-//     pub index: usize,
-//     pub device: ConnectedDevice,
-// }
 
-// #[derive(Clone, Debug)]
-// pub struct DeviceListUpdate {
-//     pub changes: Vec<DeviceListChange>,
-//     pub state: DeviceListState,
-// }
 
-// #[derive(Clone, Debug)]
-// pub struct DeviceListState {
-//     pub devices: Vec<ConnectedDevice>,
-//     pub state_id: usize,
-// }
 
-// impl DeviceListState {
-//     #[flutter_rust_bridge::frb(sync)]
-//     pub fn get_device(&self, id: DeviceId) -> Option<ConnectedDevice> {
-//         self.devices.iter().find(|device| device.id == id).cloned()
-//     }
-// }
 
-// #[derive(Clone, Debug)]
-// pub struct ConnectedDevice {
-//     pub name: Option<String>,
-//     // NOTE: digest should always be present in any device that is actually plugged in
-//     pub firmware_digest: String,
-//     pub latest_digest: Option<String>,
-//     pub id: DeviceId,
-// }
 
-// impl ConnectedDevice {
-//     pub fn ready(&self) -> bool {
-//         self.name.is_some() && !self.needs_firmware_upgrade().0
-//     }
-
-//     pub fn needs_firmware_upgrade(&self) -> bool {
-//         // We still want to have this return true even when we don't have firmware in the app so we
-//         // know that the device needs a firmware upgrade (even if we can't give it to them).
-//         Some(self.firmware_digest.as_str()) != self.latest_digest.as_deref()
-//     }
-// }
-
-#[frb(sync)]
-pub fn device_list_hello_world() -> DeviceId {
-    DeviceId::from_bytes([42u8; 33])
+pub struct AndroidUsb {
+    list_devices: Option<Box<dyn Fn() -> DartFnFuture<Vec<String>> + Send + Sync>>,
 }
+
+
+pub async fn start(mut usb_backend: UsbSerial, stream: StreamSink<Vec<String>>) {
+    let mut events = usb_backend.inner.port_events();
+    loop {
+         match events.next().await {
+            Some(ports) => { stream.add(ports); },
+            None => break,
+        }
+    }
+}
+
+
+trait UsbSerialBackend {
+    fn port_events(&mut self) -> Pin<Box<dyn Stream<Item=Vec<String>>>>;
+}
+
+#[frb(opaque)]
+pub struct UsbSerial {
+    inner: Box<dyn UsbSerialBackend + 'static>
+}
+
+
+
+impl UsbSerialBackend for AndroidUsb {
+    fn port_events(&mut self) -> Pin<Box<dyn Stream<Item=Vec<String>>>> {
+        let list_devices = self.list_devices.take().expect("can't start port events twice");
+        let stream = futures::stream::unfold((), move |_| async {
+            let devices = (list_devices)().await;
+            Some((devices, ()))
+        });
+
+        Box::pin(stream)
+    }
+}
+
+pub async fn start_android_usb(dart_callback: impl Fn() -> DartFnFuture<Vec<String>> + 'static + Send + Sync ) -> UsbSerial {
+    UsbSerial {
+        inner: Box::new(AndroidUsb { list_devices: Some(Box::new(dart_callback)) })
+   }
+
+}
+
+#[frb(opaque)]
+pub struct OrdinaryUsb {}
+
+pub async fn start_ordinary_usb() -> OrdinaryUsb {
+    OrdinaryUsb {}
+}
+
+impl UsbSerialBackend for OrdinaryUsb {
+    fn port_events(&mut self) -> Pin<Box<dyn Stream<Item=Vec<String>>>> {
+
+        let stream = futures::stream::unfold((), move |_| async {
+            match tokio_serial::available_ports() {
+                Ok(ports) => {
+                    let names = ports
+                        .iter()
+                        .map(|port| port.port_name.clone())
+                        .collect::<Vec<String>>();
+                    tokio::time::sleep(Duration::from_secs(2)).await;
+                    Some((names, ()))
+                },
+                Err(_) => todo!(),
+            }
+
+        });
+
+        Box::pin(stream)
+    }
+}
+

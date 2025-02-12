@@ -2,7 +2,7 @@ name: frostsnapp2
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -36,8 +36,14 @@ dependencies:
   cupertino_icons: ^1.0.8
   rust_lib_frostsnapp2:
     path: rust_builder
-  flutter_rust_bridge: 2.7.1
+  flutter_rust_bridge: 2.8.0
+  usb_serial:
+    # TODO: https://github.com/altera2015/usbserial/issues/118
+    git:
+      url: "https://github.com/hwh97/usbserial.git"
+      ref: "2dff0b4dcb141e740688b8a8182c4b77b38e9fba"
 
+  collection: any
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -56,7 +62,6 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

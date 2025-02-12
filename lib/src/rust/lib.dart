@@ -7,19 +7,16 @@ import 'frb_generated.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-class TArray32 extends NonGrowableListView<T> {
-  static const arraySize = 32;
+class U8Array33 extends NonGrowableListView<int> {
+  static const arraySize = 33;
 
   @internal
-  List<T> get inner => _inner;
-  final List<T> _inner;
+  Uint8List get inner => _inner;
+  final Uint8List _inner;
 
-  TArray32(this._inner)
+  U8Array33(this._inner)
       : assert(_inner.length == arraySize),
         super(_inner);
 
-  TArray32.init(T fill) : this(List<T>.filled(arraySize, fill));
+  U8Array33.init() : this(Uint8List(arraySize));
 }
-
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<T>>
-abstract class T implements RustOpaqueInterface {}
